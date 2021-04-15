@@ -1,2 +1,12 @@
-# Project exclude paths
-/cmake-build-debug/
+#ignore all files with no extension
+*
+!*.*
+!*/
+
+#exclude .idea/ directories
+.idea/*
+cmake-build-debug/*
+/testdir
+in.txt
+out.txt
+*.txt
