@@ -12,33 +12,26 @@ void handleSigusrHandler (int type);
 int sigusrHandler (int handlerID, int isType1) {
     printf("This is handler #%d\n", handlerID);
 
-    //Set behavior for SIGUSR1 and SIGUSR2 signals
-    if (isType1) {      //Signal handler for SIGUSR1
-        //Respond to SIGUSR1
-        //Ignore SIGUSR2
-        if(signal(SIGUSR1, handleSigusrHandler) == SIG_ERR) {
-            perror("Error calling signal");
-            exit(1);
-        }
-        if(signal(SIGUSR2, SIG_IGN) == SIG_ERR) {
-            perror("Error calling signal");
-            exit(1);
-        }
+    //Determine SIGUSR to respond to and to ignore depending on type
+    int signal_respond, signal_ignore;
+    if (isType1) {
+        signal_respond = SIGUSR1;
+        signal_ignore = SIGUSR2;
     }
-    else {              //Signal handler for SIGUSR2
-        //Respond to SIGUSR2
-        //Ignore SIGUSR1
-        if(signal(SIGUSR2, handleSigusrHandler) == SIG_ERR) {
-            perror("Error calling signal");
-            exit(1);
-        }
-        if(signal(SIGUSR1, SIG_IGN) == SIG_ERR) {
-            perror("Error calling signal");
-            exit(1);
-        }
+    else {
+        signal_respond = SIGUSR2;
+        signal_ignore = SIGUSR1;
     }
 
-
+    //Set signal responses
+    if(signal(signal_respond, handleSigusrHandler) == SIG_ERR) {
+        perror("Error calling signal");
+        exit(1);
+    }
+    if(signal(signal_ignore, SIG_IGN) == SIG_ERR) {
+        perror("Error calling signal");
+        exit(1);
+    }
 
     while(1) {
         pause();

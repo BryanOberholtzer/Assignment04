@@ -7,6 +7,7 @@
 create_children_wait.c
 shm_tst.c
 print_sig_type.c
+shared_counter_tst.c
 
 #exclude .idea/ directories
 .idea/*

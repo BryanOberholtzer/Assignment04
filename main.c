@@ -35,17 +35,6 @@ int main(int argc, char** argv) {
     struct SharedMem *sm;
     sm = (struct SharedMem *) shmat(shmID, NULL, 0);
 
-    //Overwrite SIGUSR1 and SIGUSR2
-
-    /*
-    if ((signal(SIGUSR1, handleSigusrMain) == SIG_ERR)) {
-        perror("Signal failed to execute");
-        exit(1);
-    }
-    */
-
-
-
     //Fork into processes
     int pid[8];
 
@@ -57,7 +46,6 @@ int main(int argc, char** argv) {
         else if(pid[i] == 0) {
             if(i <= 3) {                            //Signal handler processes
                 if(i <= 1) {    //i = 0 or 1
-                    puts("handler type 1");
                     sigusrHandler(i, 1);    //SIGUSR1 handler
                 }
                 else {          //i = 2 or 3
