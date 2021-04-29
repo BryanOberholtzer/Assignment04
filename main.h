@@ -9,11 +9,12 @@
 //Shared memory structs
 
 int sigusrHandler (int handlerID, int isType1);
-int sigusrGenerator (int handlerID);
+
+_Noreturn int sigusrGenerator (int handlerID);
 int signalReporter();
 
 //Global protected counters for signals
-extern struct protected_counter *recv_sigusr1, *recv_sigusr2;
+extern struct protected_counter *recv_sigusr1, *recv_sigusr2, *sent_sigusr1, *sent_sigusr2;
 
 struct SharedMem {
     int sig1_sent, sig2_sent;

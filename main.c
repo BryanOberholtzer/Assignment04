@@ -22,7 +22,7 @@
 #define NUM_SIG_GENERATORS 3
 #define DEBUG_NUM_EXECS 8
 
-struct protected_counter *recv_sigusr1, *recv_sigusr2;
+struct protected_counter *recv_sigusr1, *recv_sigusr2, *sent_sigusr1, *sent_sigusr2;
 
 int main(int argc, char** argv) {
 
@@ -38,6 +38,16 @@ int main(int argc, char** argv) {
     sm = (struct SharedMem *) shmat(shmID, NULL, 0);
     */
 
+    //Set default SIGUSR1/2 responses for main
+    if (signal(SIGUSR1, SIG_IGN) == SIG_ERR) {
+        perror("Failed to call signal");
+        exit(1);
+    }
+    if (signal(SIGUSR2, SIG_IGN) == SIG_ERR) {
+        perror("Failed to call signal");
+        exit(1);
+    }
+
     //Initialize SIGUSR1/2 counters
     if ((recv_sigusr1 = make_counter("SIGUSR1_Recv")) == NULL) {
         fprintf(stderr, "Error creating shared counter");
@@ -47,9 +57,21 @@ int main(int argc, char** argv) {
         fprintf(stderr, "Error creating shared counter");
         exit(1);
     }
-    //Set both counters to 0
+    if ((sent_sigusr1 = make_counter("SIGUSR1_Sent")) == NULL) {
+        fprintf(stderr, "Error creating shared counter");
+        exit(1);
+    }
+    if ((sent_sigusr2 = make_counter("SIGUSR2_Sent")) == NULL) {
+        fprintf(stderr, "Error creating shared counter");
+        exit(1);
+    }
+
+    //Set all counters to 0
     set(recv_sigusr1, 0);
     set(recv_sigusr2, 0);
+
+    set(sent_sigusr1, 0);
+    set(sent_sigusr2, 0);
 
     //Fork into processes
     int pid[8];
@@ -69,7 +91,7 @@ int main(int argc, char** argv) {
                 exit(0);
             }
             else if (i <= 6) {                      //Signal generating processes
-                //sigusrGenerator(i);
+                sigusrGenerator(i);
                 exit(0);
             }
             else {                                  //Single Reporter process
@@ -81,26 +103,19 @@ int main(int argc, char** argv) {
 
     sleep(1);       //Let all child processes set-up
 
-    //Set SIGUSR1/2 responses for main
-    if (signal(SIGUSR1, handleSigusrMain) == SIG_ERR) {
-        perror("Failed to call signal");
-        exit(1);
-    }
-    if (signal(SIGUSR2, handleSigusrMain) == SIG_ERR) {
-        perror("Failed to call signal");
-        exit(1);
-    }
-
-    for (int i = 0; i < 5; i++) {
-        if (i % 2 == 0) kill(0, SIGUSR1);
+    /*
+    for (int i = 0; i < 100; i++) {
+        if (i % 4 == 0) kill(0, SIGUSR1);
         else kill(0, SIGUSR2);
-        sleep(1);
+        usleep(1000);
     }
+    */
 
-    kill(0, SIGINT);
 
-    int status;
-    wait(&status);
+    //Wait for all children to exit
+    pid_t wpid;
+    int status = 0;
+    while ((wpid = wait(&status)) > 0);
 
     //Cleanup counters
     cleanup(recv_sigusr1);
