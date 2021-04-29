@@ -7,6 +7,9 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include "main.h"
+#include "protected_counter.h"
+
 void handleSigusrHandler (int type);
 
 int sigusrHandler (int handlerID, int isType1) {
@@ -42,10 +45,12 @@ int sigusrHandler (int handlerID, int isType1) {
 
 void handleSigusrHandler (int type) {
     if (type == SIGUSR1) {
-        puts("sigusr1");
+        inc(recv_sigusr1);
+        printf("sigusr1: %d\n", get_value(recv_sigusr1));
     }
     else if (type == SIGUSR2) {
-        puts("sigusr2");
+        inc(recv_sigusr2);
+        printf("sigusr2: %d\n", get_value(recv_sigusr2));
     }
     else {
         puts("unknown signal");

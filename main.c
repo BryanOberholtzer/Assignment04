@@ -16,15 +16,17 @@
 #include <signal.h>
 
 #include "main.h"
+#include "protected_counter.h"
 
 #define NUM_SIG_HANDLERS 4
 #define NUM_SIG_GENERATORS 3
 #define DEBUG_NUM_EXECS 8
 
-#define SIGUSR1_MSG "This is the sigint1 message."
+struct protected_counter *recv_sigusr1, *recv_sigusr2;
 
 int main(int argc, char** argv) {
 
+    /*
     //Create shared memory region
     int shmID = shmget(IPC_PRIVATE, sizeof(struct SharedMem), IPC_CREAT | 0666);
     if(shmID < 0) {
@@ -34,10 +36,23 @@ int main(int argc, char** argv) {
 
     struct SharedMem *sm;
     sm = (struct SharedMem *) shmat(shmID, NULL, 0);
+    */
+
+    //Initialize SIGUSR1/2 counters
+    if ((recv_sigusr1 = make_counter("SIGUSR1_Recv")) == NULL) {
+        fprintf(stderr, "Error creating shared counter");
+        exit(1);
+    }
+    if ((recv_sigusr2 = make_counter("SIGUSR2_Recv")) == NULL) {
+        fprintf(stderr, "Error creating shared counter");
+        exit(1);
+    }
+    //Set both counters to 0
+    set(recv_sigusr1, 0);
+    set(recv_sigusr2, 0);
 
     //Fork into processes
     int pid[8];
-
     for(int i = 0; i < DEBUG_NUM_EXECS; i++) {
         if ((pid[i] = fork()) == -1) {                 //Fork process
             perror("Fork failed to execute");
@@ -62,13 +77,19 @@ int main(int argc, char** argv) {
                 exit(0);
             }
         }
-        printf("%d\n", i);
     }
 
-    sleep(1);
+    sleep(1);       //Let all child processes set-up
 
-    signal(SIGUSR1, handleSigusrMain);
-    signal(SIGUSR2, handleSigusrMain);
+    //Set SIGUSR1/2 responses for main
+    if (signal(SIGUSR1, handleSigusrMain) == SIG_ERR) {
+        perror("Failed to call signal");
+        exit(1);
+    }
+    if (signal(SIGUSR2, handleSigusrMain) == SIG_ERR) {
+        perror("Failed to call signal");
+        exit(1);
+    }
 
     for (int i = 0; i < 5; i++) {
         if (i % 2 == 0) kill(0, SIGUSR1);
@@ -80,6 +101,10 @@ int main(int argc, char** argv) {
 
     int status;
     wait(&status);
+
+    //Cleanup counters
+    cleanup(recv_sigusr1);
+    cleanup(recv_sigusr2);
 
     return 0;
 }

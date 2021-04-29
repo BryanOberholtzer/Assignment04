@@ -7,6 +7,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include "main.h"
+
 int signalReporter () {
     printf("%s\n", "This is the reporter");
 
