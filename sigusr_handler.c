@@ -17,14 +17,9 @@ int sigusrHandler (int handlerID, int isType1) {
 
     //Determine SIGUSR to respond to and to ignore depending on type
     int signal_respond, signal_ignore;
-    if (isType1) {
-        signal_respond = SIGUSR1;
-        signal_ignore = SIGUSR2;
-    }
-    else {
-        signal_respond = SIGUSR2;
-        signal_ignore = SIGUSR1;
-    }
+
+    signal_respond = (isType1)? SIGUSR1 : SIGUSR2;
+    signal_ignore = (isType1) ? SIGUSR2 : SIGUSR1;
 
     //Set signal responses
     if(signal(signal_respond, handleSigusrHandler) == SIG_ERR) {
@@ -46,11 +41,11 @@ int sigusrHandler (int handlerID, int isType1) {
 void handleSigusrHandler (int type) {
     if (type == SIGUSR1) {
         inc(recv_sigusr1);
-        printf("sigusr1: %d\n", get_value(recv_sigusr1));
+        //printf("sigusr1: %d\n", get_value(recv_sigusr1));
     }
     else if (type == SIGUSR2) {
         inc(recv_sigusr2);
-        printf("sigusr2: %d\n", get_value(recv_sigusr2));
+        //printf("sigusr2: %d\n", get_value(recv_sigusr2));
     }
     else {
         puts("unknown signal");

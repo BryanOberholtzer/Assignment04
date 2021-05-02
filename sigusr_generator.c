@@ -37,22 +37,18 @@ int sigusrGenerator (int handlerID) {
     int signal_type;
     while(1) {
         is_sigusr1 = rand() & 1;          //Generate random 0 or 1 to determine SIGUSR1/2
-        printf("rand: %d\n", is_sigusr1);
         signal_type = is_sigusr1 ? SIGUSR1 : SIGUSR2;
         struct protected_counter *to_inc = is_sigusr1 ? sent_sigusr1 : sent_sigusr2;
 
-        kill(0, signal_type);
+        kill(0, signal_type);       //Signal respectice SIGUSR1/2
 
-        inc(to_inc);
+        inc(to_inc);        //Increment respective counter
 
-        printf("counter: %d\n", get_value(to_inc));
+        //printf("counter: %d\n", get_value(to_inc));
 
-        //sleep(1);
-        rand_wait = randInt(10000, 100000);
+        rand_wait = randInt(10000, 100000);     //Pick between .1 and .01 seconds to wait
         usleep(rand_wait);
     }
-
-    return 0;
 }
 
 int randInt (int min, int max) {

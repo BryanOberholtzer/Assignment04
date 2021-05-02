@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
                 exit(0);
             }
             else {                                  //Single Reporter process
-                //signalReporter();
+                signalReporter();
                 exit(0);
             }
         }
